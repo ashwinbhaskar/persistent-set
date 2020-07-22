@@ -1,0 +1,4 @@
+package adt
+
+enum Error:
+    case INVALID_COMMAND, EMPTY_VALUE, INVALID_INPUT, DUPLICATE_LINE
