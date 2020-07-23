@@ -1,8 +1,10 @@
 import scala.io.StdIn
 import java.io.File
-import adt.{Command, Error, NonEmptyString}
+import adt.{Command, Error, NonEmptyString, NonEmptyStringOps}
 import adt.Command._
-import extension.{StringOps, NonEmptyStringOps, FileOps}
+import extension.{StringOps, FileOps}
+import scala.util.chaining._
+import scala.language.implicitConversions
 
 @main def run: Unit = 
     println("preparing..")
@@ -16,5 +18,8 @@ import extension.{StringOps, NonEmptyStringOps, FileOps}
         .toCommandAndValue
         .flatMap {
             case (ADD, value: NonEmptyString) => file.addLineUnique(value)
-            case (REMOVE, value) => file.deleteLine(value)
+            case (BATCH_ADD, values) => 
+                val lines: Array[NonEmptyString] = values.split("\n")
+                val uniqueLines = lines.toSet
+                file.addLinesUnique(uniqueLines)
         }       
