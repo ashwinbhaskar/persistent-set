@@ -15,6 +15,7 @@ object NonEmptyString:
             case somethingElse => Right(somethingElse)
 
 extension NonEmptyStringOps on (nes: NonEmptyString):
-    def isEqualTo(a: String): Boolean = nes == a
+    def equals(another: NonEmptyString): Boolean = nes == another
+    def hashCode: Int = nes.hashCode
     def split(s: String): Array[NonEmptyString]
         = nes.split(s)

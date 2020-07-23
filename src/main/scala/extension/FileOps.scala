@@ -7,22 +7,25 @@ import java.nio.channels.FileChannel
 import scala.io.Source
 
 extension FileOps on (file: File):
-    def addLinesUnique(lines: Set[NonEmptyString]): Either[Error, List[NonEmptyString]] = 
-        val linesToAppend = Source.fromFile(file).getLines
-            .filterNot(l => lines.contains(NonEmptyString(l)))
-            .toList
+    def addLinesUnique(lines: Set[NonEmptyString]): Either[Error, Set[NonEmptyString]] = 
+        val commonLines = Source.fromFile(file).getLines
+                .filter(l => lines.contains(NonEmptyString(l)))
+                .map(NonEmptyString.apply)
+                .toSet
+        val linesToAppend = lines diff commonLines
+                
         if (linesToAppend.isEmpty)
-            Right(List.empty[NonEmptyString])
+            Right(Set.empty[NonEmptyString])
         else
             val fileWriter = new FileWriter(file, true)
             val writer = new PrintWriter(fileWriter)
             val allLinesAsOne = linesToAppend.mkString("\n")
             writer.println(allLinesAsOne)
             writer.close
-            Right(linesToAppend.map(NonEmptyString.apply))
+            Right(linesToAppend)
 
     def addLineUnique(lineToAdd: NonEmptyString): Either[Error.DUPLICATE_LINE.type, Unit] = 
-        val exists = Source.fromFile(file).getLines.exists(line => lineToAdd.isEqualTo(line))
+        val exists = Source.fromFile(file).getLines.exists(line => lineToAdd.equals(line))
         if(exists)
            Left(Error.DUPLICATE_LINE)
         else
