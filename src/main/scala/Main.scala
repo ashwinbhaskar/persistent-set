@@ -6,9 +6,9 @@ import extension.FileOps
 import scala.util.chaining._
 import scala.language.implicitConversions
 
-@main def run(command: String, value: String, delimiter: String) = 
-    val fileName = "database.txt"
-    val appendedLinesFileName = "unique_lines.txt"
+@main def run(command: String, value: String, delimiter: String, databasePath: String, appendedLinesPath: String) = 
+    val fileName = s"$databasePath/database.txt"
+    val appendedLinesFileName = s"$appendedLinesPath/unique_lines.txt"
     val file = new File(fileName)
     val appendedLinesFile = new File(appendedLinesFileName)
     if(!file.exists)
