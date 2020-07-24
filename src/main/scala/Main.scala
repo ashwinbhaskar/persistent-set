@@ -2,24 +2,29 @@ import scala.io.StdIn
 import java.io.File
 import adt.{Command, Error, NonEmptyString, NonEmptyStringOps}
 import adt.Command._
-import extension.{StringOps, FileOps}
+import extension.FileOps
 import scala.util.chaining._
 import scala.language.implicitConversions
 
-@main def run: Unit = 
-    println("preparing..")
+@main def run(command: String, value: String, delimiter: String) = 
     val fileName = "database.txt"
+    val appendedLinesFileName = "unique_lines.txt"
     val file = new File(fileName)
+    val appendedLinesFile = new File(appendedLinesFileName)
     if(!file.exists)
         file.createNewFile
-    println("Enter a command: ")
-    val line: String = StdIn.readLine
-    line
-        .toCommandAndValue
-        .flatMap {
-            case (ADD, value: NonEmptyString) => file.addLineUnique(value)
-            case (BATCH_ADD, values) => 
-                val lines: Array[NonEmptyString] = values.split("\n")
+    if(!appendedLinesFile.exists)
+        appendedLinesFile.createNewFile
+    for
+        c <- Command.fromString(command)
+        v <- NonEmptyString.safe(value)
+    yield
+        c match
+            case ADD => file.addLineUnique(v)
+            case BATCH_ADD => 
+                val delim = delimiter match
+                    case null | "" => "\n"
+                    case somethingElse => somethingElse
+                val lines: Array[NonEmptyString] = v.split(delim)
                 val uniqueLines = lines.toSet
-                file.addLinesUnique(uniqueLines)
-        }       
+                file.addLinesUnique(uniqueLines, appendedLinesFile)
