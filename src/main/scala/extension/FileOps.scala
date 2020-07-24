@@ -7,13 +7,40 @@ import java.nio.channels.FileChannel
 import scala.io.Source
 
 extension FileOps on (file: File):
-    def addLinesUnique(lines: Set[NonEmptyString]): Either[Error, Set[NonEmptyString]] = 
+
+    def appendLines(lines: Set[NonEmptyString]): Unit = 
+        val fileWriter = new FileWriter(file, true)
+        val writer = new PrintWriter(fileWriter)
+        val allLinesAsOne = lines.mkString("\n")
+        writer.println(allLinesAsOne)
+        writer.close
+    
+    def fillLines(lines: Set[NonEmptyString]): Unit = 
+        if(lines.nonEmpty)
+            val fileWriter = new FileWriter(file, false)
+            val writer = new PrintWriter(fileWriter)
+            val allLinesAsOne = lines.mkString("\n")
+            writer.println(allLinesAsOne)
+            writer.close
+        else
+            new FileWriter(file).close
+
+    def removeExistingLines(lines: Set[NonEmptyString]): Set[NonEmptyString] = 
         val commonLines = Source.fromFile(file).getLines
                 .filter(l => lines.contains(NonEmptyString(l)))
                 .map(NonEmptyString.apply)
                 .toSet
-        val linesToAppend = lines diff commonLines
-                
+        lines diff commonLines
+
+    def addLinesUnique(lines: Set[NonEmptyString], appendLinesFileName: File): Either[Error, Unit] = 
+        val linesToAppend = file.removeExistingLines(lines)
+        if(linesToAppend.nonEmpty)
+            file.appendLines(linesToAppend)
+        appendLinesFileName.fillLines(linesToAppend)
+        Right(())
+
+    def addLinesUnique(lines: Set[NonEmptyString]): Either[Error, Set[NonEmptyString]] = 
+        val linesToAppend = file.removeExistingLines(lines)
         if (linesToAppend.isEmpty)
             Right(Set.empty[NonEmptyString])
         else
