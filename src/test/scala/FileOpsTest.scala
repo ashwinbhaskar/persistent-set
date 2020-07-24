@@ -4,7 +4,7 @@ import adt.Error._
 import adt.NonEmptyString
 import scala.io.Source
 
-class HelloSpec extends munit.FunSuite {
+class FileOpsTest extends munit.FunSuite {
 
   private val filePath = getClass.getClassLoader.getResource("test_file.txt").getFile
 
